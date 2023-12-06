@@ -27,4 +27,13 @@
     <ProjectReference Include="..\Day-3-Gear-Ratios\Day-3-Gear-Ratios.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="simple.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="to-submit.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

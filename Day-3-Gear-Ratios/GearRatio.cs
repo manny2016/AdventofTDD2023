@@ -1,16 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Day_3_Gear_Ratios
 {
     public class GearRatio
     {
-        private List<List<char>> schematic = new List<List<char>>();
+        protected List<List<char>> schematic = new List<List<char>>();
         private HashSet<char> symbols = new HashSet<char>();
 
-        public int Caculate(string input)
+        public GearRatio(string input)
         {
             initSchematic(input);
+        }
 
+        public virtual int Caculate()
+        {
             int totalSum = 0;
 
             for (int i = 0; i < schematic.Count; i++)
@@ -38,6 +42,7 @@ namespace Day_3_Gear_Ratios
                         // add to total
                         if (wordValue > 0 && isAdjacent)
                         {
+                            Debug.WriteLine(wordValue);
                             totalSum += wordValue;
                         }
                         wordValue = 0;
@@ -70,13 +75,13 @@ namespace Day_3_Gear_Ratios
                 || isSymbole(i + 1, j + 1);
         }
 
-        private bool isSymbole(int i, int j)
+        protected virtual bool isSymbole(int i, int j)
         {
             if (i < 0 || j < 0 || i >=  schematic.Count || j >= schematic[i].Count)
             {
                 return false;
             }
-            return char.IsSymbol(schematic[i][j]);
+            return symbols.Contains(schematic[i][j]);
         }
 
 
