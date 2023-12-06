@@ -10,10 +10,10 @@ namespace Day_3_Gear_Ratios
 
     public class GearRatios2 : GearRatio
     {
-        struct Gear
+        public class Gear
         {
-            public int value { get; set}
-            public int touch { get; set; }
+            public int Value { get; set; }
+            public int AdjacentCount { get; set; }
         }
 
         private Dictionary<(int, int), Gear> multiples = new Dictionary<(int, int), Gear>();
@@ -57,8 +57,12 @@ namespace Day_3_Gear_Ratios
                         {
                             if (multiples.ContainsKey(gearPosition))
                             {
-                                multiples[gearPosition].value = multiples[(gearPosition)].value * wordValue;
-                                multiples[gearPosition].touch++;
+                                multiples[gearPosition].Value = multiples[(gearPosition)].Value * wordValue;
+                                multiples[gearPosition].AdjacentCount++;
+                            }
+                            else
+                            {
+                                multiples.Add(gearPosition, new Gear { Value = wordValue, AdjacentCount = 1 }); 
                             }
 
                         }
@@ -67,6 +71,8 @@ namespace Day_3_Gear_Ratios
                     }
                 }
             }
+
+            return multiples.Where(x => x.Value.AdjacentCount == 2).Sum(x => x.Value.Value);
         }
 
         private bool tryGetAdjacentPosition(int i, int j, out (int, int) gearPosition)

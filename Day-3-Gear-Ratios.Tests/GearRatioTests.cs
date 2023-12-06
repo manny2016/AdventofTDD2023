@@ -51,9 +51,21 @@ namespace Day_3_Gear_Ratios.Tests
 .664.598..", 467835)]
         public void Gear2(string input, int expect)
         {
-            var gear = new GearRatio(input);
+            var gear = new GearRatios2(input);
             var actual = gear.Caculate();
             Assert.Equal(expect, actual);
+        }
+
+        [Fact]
+        public void Input2_from_fiile_should_correct()
+        {
+            string filePath = "./to-submit.txt";
+            using StreamReader reader = new StreamReader(filePath);
+            string input = reader.ReadToEnd();
+            var gear = new GearRatios2(input);
+            var actual = gear.Caculate();
+            int expected = 73201705;
+            Assert.Equal(expected, actual);
         }
     }
 
