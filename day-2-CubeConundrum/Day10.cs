@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System.Data;
+using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Security.Cryptography.X509Certificates;
 
 namespace AdventofTDD2023
@@ -64,23 +66,29 @@ namespace AdventofTDD2023
 
             }
         };
-
-        public int GetMaxSteps(string inputText)
+        private readonly HashSet<Point> _touchedPoints = new HashSet<Point>(PointEqualityComparer.Instance);
+        public decimal GetMaxSteps(string inputText)
         {
             var square = GetSquare(inputText);
             var current = GetStartPoint(square);
-            return MoveNext(square, current, 0, null);
+            var result = MoveNext(square, current, 0, null);
+            return Math.Ceiling(result / 2);
         }
 
-        private int MoveNext(char[][] square, Point current, int steps, Point? previous)
+        private decimal MoveNext(char[][] square, Point current, decimal steps, Point? previous)
         {
+            _touchedPoints.Add(current);
+
             var nextPoints = _moveNext[square[current.X][current.Y]].Invoke(current);
             var tempSteps = steps;
+
             foreach (var next in nextPoints)
             {
-                if (IsOutofRange(square, next) || next == previous) continue;
+                if (IsOutofRange(square, next) || next == previous || _touchedPoints.Contains(next)) continue;
+               
                 tempSteps = Math.Max(tempSteps, MoveNext(square, next, steps + 1, current));
             }
+
             return tempSteps;
         }
 
@@ -97,6 +105,7 @@ namespace AdventofTDD2023
             }
             throw new KeyNotFoundException("Can not found the start point.");
         }
+
         public char[][] GetSquare(string inputData)
         {
             var lines = inputData.Split("\r\n".ToCharArray()).Where(x => !string.IsNullOrEmpty(x)).ToArray();
@@ -116,6 +125,21 @@ namespace AdventofTDD2023
                 || point.Y >= square.Length
                 || square[point.X][point.Y] == '.'
                 || square[point.X][point.Y] == 'S');
+        }
+    }
+
+    class PointEqualityComparer : IEqualityComparer<Point>
+    {
+        public static PointEqualityComparer Instance = new PointEqualityComparer();
+
+        public bool Equals(Point x, Point y)
+        {
+            return x.X == y.X && x.Y == y.Y;
+        }
+
+        public int GetHashCode([DisallowNull] Point obj)
+        {
+            return $"{obj.X}:{obj.Y}".GetHashCode();
         }
     }
 }
