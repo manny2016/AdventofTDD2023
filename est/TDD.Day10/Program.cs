@@ -301,7 +301,7 @@ J|7L.FLFLF-LLFF7.F|..LF|-.||LJFJF7.LL77F|JJFF-...77F7JL|LL||7F|...FL.-J-.F7|||7F
 |L-.LJFL-F-F.|L-7-|.7FFF.FFLJL--7.|.L|7-|-7|LLL77LL7LF-77|LF||L7-77FJ-|.LL|7J7L7J|J|7F-J|FJJF7FF||.7||.L7FL|-J777JLJ7LJ|7|L||JF|7.LJLJFL|FJ.
 FJLLJL---|L7J-LLJ.J.--JJ.7..F7J.J-LF-JJ.J--7JJ|JL7JLF..LJJ-LFJJ.-JL7L-JJ.LLJLL.L-J-LLJJ-JLJ-JJJ-F--LF-J-LL-L7LJ.L-L|7-7JLLJLJLJJJ7JL-L7L|JJJ
 ";
-var graphic = new Graphic(inputText2);
+var graphic = new Graphic(inputText3);
 graphic.BFS();
 graphic.Write();
 

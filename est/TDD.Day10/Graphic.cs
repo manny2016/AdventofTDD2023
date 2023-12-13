@@ -53,18 +53,14 @@ namespace TDD.Day10
             {
                 var temp = linked.Dequeue();
 
-                var edges = temp.GetEdgesBySymbol();
+                var edges = temp.GetEdgesBySymbol(_vertexs).Where(x => !x.Visited);
 
                 foreach (var edge in edges)
                 {
                     edge.Visited = true;
-
-                    if (_vertexs[edge.To].Symbol.Equals('.')
-                        || _vertexs[edge.To].Distance > 0
-                        || _vertexs[edge.To].Symbol.Equals('S'))
-                    {
+                    if (_vertexs[edge.To].Distance > 0 || _vertexs[edge.To].Symbol.Equals('.'))
                         continue;
-                    }
+
                     _vertexs[edge.To].Distance = _vertexs[edge.From].Distance + 1;
                     linked.Enqueue(_vertexs[edge.To]);
                 }
@@ -115,7 +111,7 @@ namespace TDD.Day10
         {
             foreach (var vertex in _vertexs.Values)
             {
-                Console.WriteLine($"{vertex.Id} -> {string.Join(", ", vertex.GetEdgesBySymbol().Select(x => $"{x.Direction}; From:{x.From} To:{x.To}"))}");
+                Console.WriteLine($"{vertex.Id} -> {string.Join(", ", vertex.GetEdgesBySymbol(_vertexs).Select(x => $"{x.Direction}; From:{x.From} To:{x.To}"))}");
             }
         }
     }

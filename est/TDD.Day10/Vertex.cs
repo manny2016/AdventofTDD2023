@@ -40,44 +40,48 @@ namespace TDD.Day10
             }
         }
 
-        public Edge[] GetEdgesBySymbol()
+        public List<Edge> GetEdgesBySymbol(IDictionary<string, Vertex> vertexs)
         {
             switch (Symbol)
             {
                 case 'S':
-                    var all = new Direction[] {
-                        Direction.South,
-                        Direction.East,
-                        Direction.West,
-                        Direction.North };
-                    return Edges.Where(x => all.Contains(x.Direction)).ToArray();
+                    var result = new List<Edge>();
+                    foreach (var edge in Edges)
+                    {
+                        var to = vertexs[edge.To].GetEdgesBySymbol(vertexs).SingleOrDefault((x => x.To.Equals(Id)));
+                        if (to != null)
+                        {
+                            result.Add(edge);
+                        }
+                    }
+                    return result;
                 case '|':
                     var north_south = new Direction[] { Direction.North, Direction.South };
                     return Edges.Where(x => north_south.Contains(x.Direction))
-                        .ToArray();
+                        .ToList();
                 case '-':
                     var east_west = new Direction[] { Direction.East, Direction.West };
                     return Edges.Where(x => east_west.Contains(x.Direction))
-                        .ToArray();
+                        .ToList();
                 case 'L':
                     var north_east = new Direction[] { Direction.North, Direction.East };
                     return Edges.Where(x => north_east.Contains(x.Direction))
-                        .ToArray();
+                        .ToList();
                 case 'J'://connecting north and west.
                     var north_west = new Direction[] { Direction.North, Direction.West };
                     return Edges.Where(x => north_west.Contains(x.Direction))
-                        .ToArray();
+                        .ToList();
                 case '7':
                     //connecting south and west.
                     var south_west = new Direction[] { Direction.South, Direction.West };
                     return Edges.Where(x => south_west.Contains(x.Direction))
-                        .ToArray();
+                        .ToList();
                 case 'F'://connecting south and east.
                     var south_east = new Direction[] { Direction.South, Direction.East };
                     return Edges.Where(x => south_east.Contains(x.Direction))
-                       .ToArray();
+                       .ToList();
                 default:
-                    return new Edge[] { };
+                    return new List<Edge> { };
             }
         }
 
