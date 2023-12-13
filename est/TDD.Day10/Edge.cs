@@ -13,5 +13,7 @@ namespace TDD.Day10
         public Direction Direction { get; set; }
 
         public string To { get; set; }
+
+        public bool Visited { get; set; }
     }
 }

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace TDD.Day10
 {
     public class Graphic
     {
-        private readonly IDictionary<string, Vertex> vertexs = new Dictionary<string, Vertex>();
+        private readonly IDictionary<string, Vertex> _vertexs = new Dictionary<string, Vertex>();
         private Vertex startVertex;
         public Graphic(string inputData)
         {
@@ -23,7 +24,7 @@ namespace TDD.Day10
             {
                 for (var column = 0; column < lines[row].Length; column++)
                 {
-                    vertexs[Vertex.GenerateId(column, row)] = new Vertex()
+                    _vertexs[Vertex.GenerateId(row, column)] = new Vertex()
                     {
                         Symbol = lines[row][column],
                         Row = row,
@@ -31,42 +32,90 @@ namespace TDD.Day10
                     };
                     if (lines[row][column].Equals('S'))
                     {
-                        startVertex = vertexs[Vertex.GenerateId(column, row)];
+                        startVertex = _vertexs[Vertex.GenerateId(row, column)];
                     }
                 }
             }
 
-            foreach (var vertex in vertexs.Values)
+            foreach (var vertex in _vertexs.Values)
             {
-                vertex.InitializeEdges(vertexs);
+                vertex.InitializeEdges(_vertexs);
             }
         }
 
+
+        public void BFS()
+        {
+            var linked = new Queue<Vertex>();
+
+            linked.Enqueue(startVertex);
+            while (linked.Any())
+            {
+                var temp = linked.Dequeue();
+
+                var edges = temp.GetEdgesBySymbol();
+
+                foreach (var edge in edges)
+                {
+                    edge.Visited = true;
+
+                    if (_vertexs[edge.To].Symbol.Equals('.')
+                        || _vertexs[edge.To].Distance > 0
+                        || _vertexs[edge.To].Symbol.Equals('S'))
+                    {
+                        continue;
+                    }
+                    _vertexs[edge.To].Distance = _vertexs[edge.From].Distance + 1;
+                    linked.Enqueue(_vertexs[edge.To]);
+                }
+            }
+
+            var maxSteps = _vertexs.Values.Max(x => x.Distance);
+        }
+
+
         public void Write()
         {
-            var neighbors = vertexs[Vertex.GenerateId(1, 1)].Edges.Select(x => x.To);
+            var neighbors = startVertex.Edges.Select(x => x.To);
 
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.White;
 
-            for (var row = 0; row <= vertexs.Values.Max(x => x.Row); row++)
+            for (var row = 0; row <= _vertexs.Values.Max(x => x.Row); row++)
             {
-                for (var column = 0; column <= vertexs.Values.Max(x => x.Column); column++)
+                for (var column = 0; column <= _vertexs.Values.Max(x => x.Column); column++)
                 {
                     var id = Vertex.GenerateId(row, column);
-                    if (neighbors.Any(x => x.Equals(id)))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write(vertexs[Vertex.GenerateId(row, column)].Symbol.ToString().PadLeft(4));
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
+                    if (_vertexs[Vertex.GenerateId(row, column)].Symbol == '.')
+                        Console.Write(_vertexs[Vertex.GenerateId(row, column)].Symbol.ToString().PadLeft(4));
                     else
-                    {
-                        Console.Write(vertexs[Vertex.GenerateId(row, column)].Symbol.ToString().PadLeft(4));
-                    }
+                        Console.Write(_vertexs[Vertex.GenerateId(row, column)].Distance.ToString().PadLeft(4));
+
+                    //if (neighbors.Any(x => x.Equals(id)))
+                    //{
+                    //    Console.ForegroundColor = ConsoleColor.Red;
+                    //    Console.Write(_vertexs[Vertex.GenerateId(row, column)].Symbol.ToString().PadLeft(4));
+                    //    Console.ForegroundColor = ConsoleColor.White;
+                    //}
+                    //else
+                    //{
+                    //    //Console.Write(_vertexs[Vertex.GenerateId(row, column)].Symbol.ToString().PadLeft(4));
+                    //    if (_vertexs[Vertex.GenerateId(row, column)].Symbol == '.')
+                    //        Console.Write(_vertexs[Vertex.GenerateId(row, column)].Symbol.ToString().PadLeft(4));
+                    //    else
+                    //        Console.Write(_vertexs[Vertex.GenerateId(row, column)].Distance.ToString().PadLeft(4));
+                    //}
 
                 }
                 Console.WriteLine();
+            }
+        }
+
+        public void Write2()
+        {
+            foreach (var vertex in _vertexs.Values)
+            {
+                Console.WriteLine($"{vertex.Id} -> {string.Join(", ", vertex.GetEdgesBySymbol().Select(x => $"{x.Direction}; From:{x.From} To:{x.To}"))}");
             }
         }
     }

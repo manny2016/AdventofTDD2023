@@ -19,6 +19,8 @@ namespace TDD.Day10
 
         public int Column { get; set; }
 
+        public int Distance { get; set; }
+
         public static string GenerateId(int row, int column) => $"{row}:{column}";
 
         public void InitializeEdges(IDictionary<string, Vertex> vertexs)
@@ -27,8 +29,8 @@ namespace TDD.Day10
 
             foreach (var neighbor in new Edge[]
             {
-                new Edge(){ From= Id, To = GenerateId(Row+1, Column), Direction =  Direction.North},//UP
-                new Edge(){ From= Id, To = GenerateId(Row-1, Column), Direction =  Direction.South},//Down
+                new Edge(){ From= Id, To = GenerateId(Row-1, Column), Direction =  Direction.North},//UP
+                new Edge(){ From= Id, To = GenerateId(Row+1, Column), Direction =  Direction.South},//Down
                 new Edge(){ From =Id, To = GenerateId(Row, Column + 1), Direction = Direction.East},//Right
                 new Edge(){ From =Id, To = GenerateId(Row, Column - 1), Direction = Direction.West},//West Left                
             })
@@ -42,8 +44,6 @@ namespace TDD.Day10
         {
             switch (Symbol)
             {
-                case '.':
-                    return new Edge[] { };
                 case 'S':
                     var all = new Direction[] {
                         Direction.South,
@@ -73,7 +73,7 @@ namespace TDD.Day10
                     return Edges.Where(x => south_west.Contains(x.Direction))
                         .ToArray();
                 case 'F'://connecting south and east.
-                    var south_east = new Direction[] { Direction.South, Direction.West };
+                    var south_east = new Direction[] { Direction.South, Direction.East };
                     return Edges.Where(x => south_east.Contains(x.Direction))
                        .ToArray();
                 default:
