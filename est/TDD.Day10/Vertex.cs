@@ -11,7 +11,8 @@ namespace TDD.Day10
     {
         public string Id => GenerateId(Row, Column);
 
-        public IList<Edge> Edges = new List<Edge>();
+        public IList<Edge> Edges { get; private set; } = new List<Edge>();
+
 
         public char Symbol { get; set; }
 
@@ -20,6 +21,8 @@ namespace TDD.Day10
         public int Column { get; set; }
 
         public int Distance { get; set; }
+
+        public bool Flag { get; set; }
 
         public static string GenerateId(int row, int column) => $"{row}:{column}";
 
@@ -85,5 +88,6 @@ namespace TDD.Day10
             }
         }
 
+        public bool Visited { get; set; }
     }
 }

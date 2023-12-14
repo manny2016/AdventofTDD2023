@@ -14,7 +14,12 @@ namespace TDD.Day10
     public class Graphic
     {
         private readonly IDictionary<string, Vertex> _vertexs = new Dictionary<string, Vertex>();
-        private readonly DotZone dotZone = new DotZone();
+        private IList<DotArea> _dotareas = new List<DotArea>();
+        private readonly ConsoleColor[] colors = new ConsoleColor[] {
+             ConsoleColor.Green,
+             ConsoleColor.Blue,
+             ConsoleColor.Yellow
+        };
         private Vertex startVertex;
         public Graphic(string inputData)
         {
@@ -61,7 +66,9 @@ namespace TDD.Day10
                 foreach (var edge in edges)
                 {
                     edge.Visited = true;
-                    if (_vertexs[edge.To].Distance > 0 || _vertexs[edge.To].Symbol.Equals('.'))
+                    if (_vertexs[edge.To].Distance > 0
+                        || _vertexs[edge.To].Symbol.Equals('.')
+                        || _vertexs[edge.To].Symbol.Equals('S'))
                         continue;
 
                     _vertexs[edge.To].Distance = _vertexs[edge.From].Distance + 1;
@@ -74,47 +81,66 @@ namespace TDD.Day10
 
         public int GetAnswerOfPart2()
         {
-            var vertexs = _vertexs.Where(x => x.Value.Symbol.Equals('.'))
+            var largest = GetAnswerOfPart1();
+            var current = _vertexs.SingleOrDefault(x => x.Value.Distance.Equals(largest)).Value;
+            
+            while (!current.Distance.Equals(0))
+            {
+                var exceptEdge = current.Edges.FirstOrDefault(x => _vertexs[x.To].Distance == current.Distance - 1);
+                current.Flag = true;
+                current = _vertexs[exceptEdge.To];                
+            }
+            //_dotareas = InitializeDotArea();
+            //var answer = 0;
+            //foreach (var area in _dotareas)
+            //{
+            //    if (!area.IsValid() || !area.Enclosed()) continue;
+            //    answer += area.Dots.Count;
+            //}
+
+            return 0;
+        }
+
+        private IList<DotArea> InitializeDotArea()
+        {
+            var result = new List<DotArea>();
+            var alldots = _vertexs.Where(x => x.Value.Symbol.Equals('.'))
                 .Select(x => x.Value)
                 .ToDictionary(x => x.Id);
-            while (vertexs.Any())
-            {
-                var vertex = vertexs.OrderBy(x => x.Key).FirstOrDefault().Value;
-                //var row = vertexs.Values.Min(x => x.Row);
-                //var column = vertexs.Values.Min(x => x.Column);
 
-                var adjacentDots = GetAdjacentDots(vertexs, vertex);
+            while (alldots.Any())
+            {
+                var vertex = alldots.OrderBy(x => x.Key).FirstOrDefault().Value;
+
+                var adjacentDots = GetAdjacentDots(alldots, vertex);
 
                 if (adjacentDots.Any())
                 {
-                    dotZone.Matrix.Add(adjacentDots);
+                    result.Add(new DotArea()
+                    {
+                        Dots = adjacentDots,
+                        ClosedPipes = adjacentDots.SelectMany(x => x.Edges)
+                        .Where(x => !_vertexs[x.To].Symbol.Equals('.'))
+                        .Select(x => _vertexs[x.To])
+                        .Distinct(VertexEqualityComparer.Instance)
+                        .ToList()
+                    });
                 }
 
                 foreach (var item in adjacentDots)
                 {
-                    vertexs.Remove(item.Id);
+                    alldots.Remove(item.Id);
                 }
             }
-
-            var answer = 0;
-            foreach (var zone in dotZone.Matrix)
-            {
-                if (zone.Any(x => !x.Edges.Count.Equals(4)))
-                    continue;
-                if (dotZone.Closed(_vertexs, zone))
-                {
-                    answer += zone.Count;
-                }
-            }
-
-            return answer;
+            return result;
         }
-        private IList<Vertex> GetAdjacentDots(IDictionary<string, Vertex> vertexs, Vertex vertex)
-        {
-            var result = new List<Vertex>() { vertex };
-            var linked = new Queue<Vertex>();
-            linked.Enqueue(vertex);
 
+
+        private IList<Vertex> GetAdjacentDots(IDictionary<string, Vertex> vertexs, Vertex startVertex)
+        {
+            var result = new List<Vertex>() { startVertex };
+            var linked = new Queue<Vertex>();
+            linked.Enqueue(startVertex);
             while (linked.Any())
             {
                 var temp = linked.Dequeue();
@@ -131,27 +157,48 @@ namespace TDD.Day10
 
         public void Write()
         {
-            var neighbors = startVertex.Edges.Select(x => x.To);
             Console.ForegroundColor = ConsoleColor.White;
             for (var row = 0; row <= _vertexs.Values.Max(x => x.Row); row++)
             {
                 for (var column = 0; column <= _vertexs.Values.Max(x => x.Column); column++)
                 {
-                    Console.ForegroundColor = dotZone.GetConsoleColor(_vertexs[Vertex.GenerateId(row, column)]);
+                    Console.ForegroundColor = GetConsoleColor(_vertexs[Vertex.GenerateId(row, column)]);
                     Console.Write(_vertexs[Vertex.GenerateId(row, column)].Symbol.ToString().PadLeft(4));
                     Console.BackgroundColor = ConsoleColor.Black;
                 }
                 Console.WriteLine();
             }
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
-        public void Write2()
+        private ConsoleColor GetConsoleColor(Vertex vertex)
         {
-            foreach (var vertex in _vertexs.Values)
+            for (var i = 0; i < _dotareas.Count; i++)
             {
-                Console.WriteLine($"{vertex.Id} -> {string.Join(", ", vertex.GetEdgesBySymbol(_vertexs).Select(x => $"{x.Direction}; From:{x.From} To:{x.To}"))}");
+                if (_dotareas[i].Contains(vertex) && _dotareas[i].IsValid())
+                {
+                    return colors[i % colors.Length];
+                }
+                if (_dotareas[i].IsClosedPipe(vertex) && _dotareas[i].IsValid())
+                {
+                    return ConsoleColor.DarkRed;
+                }
+            }
+
+            return ConsoleColor.White;
+        }
+
+        public void Write1()
+        {
+            for (var row = 0; row <= _vertexs.Values.Max(x => x.Row); row++)
+            {
+                for (var column = 0; column <= _vertexs.Values.Max(x => x.Column); column++)
+                {
+                    var vertex = _vertexs[Vertex.GenerateId(row, column)];
+                    Console.ForegroundColor = vertex.Flag ? ConsoleColor.Red : ConsoleColor.White;
+                }
+                Console.WriteLine();
             }
         }
-
     }
 }
