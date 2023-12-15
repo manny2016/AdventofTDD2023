@@ -4,6 +4,8 @@ using System.Data.Common;
 using System.Drawing;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Reflection;
+using System.Reflection.Metadata;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -20,6 +22,8 @@ namespace TDD.Day10
              ConsoleColor.Blue,
              ConsoleColor.Yellow
         };
+
+        private IDictionary<string, Vertex> passing = new Dictionary<string, Vertex>();
         private Vertex startVertex;
         public Graphic(string inputData)
         {
@@ -54,12 +58,12 @@ namespace TDD.Day10
 
         public int GetAnswerOfPart1()
         {
-            var linked = new Queue<Vertex>();
+            var queue = new Queue<Vertex>();
+            queue.Enqueue(startVertex);
 
-            linked.Enqueue(startVertex);
-            while (linked.Any())
+            while (queue.Any())
             {
-                var temp = linked.Dequeue();
+                var temp = queue.Dequeue();
 
                 var edges = temp.GetEdgesBySymbol(_vertexs).Where(x => !x.Visited);
 
@@ -72,33 +76,41 @@ namespace TDD.Day10
                         continue;
 
                     _vertexs[edge.To].Distance = _vertexs[edge.From].Distance + 1;
-                    linked.Enqueue(_vertexs[edge.To]);
+                    _vertexs[edge.To].Flag = true;
+                    passing[edge.To] = _vertexs[edge.To];
+                    //Insert(edge.From, _vertexs[edge.To]);
+                    queue.Enqueue(_vertexs[edge.To]);
                 }
             }
 
             return _vertexs.Values.Max(x => x.Distance);
         }
 
+        //public void Insert(string from, Vertex vertex)
+        //{
+        //    var previous = paths.FirstOrDefault(x => x.Last.Value.Id.Equals(from));
+        //    if (previous == null)
+        //    {
+        //        previous = new LinkedList<Vertex>();
+        //        paths.Add(previous);
+        //    }
+        //    previous.AddLast(vertex);
+        //}
         public int GetAnswerOfPart2()
         {
-            var largest = GetAnswerOfPart1();
-            var current = _vertexs.SingleOrDefault(x => x.Value.Distance.Equals(largest)).Value;
-            
-            while (!current.Distance.Equals(0))
+            var largest = GetAnswerOfPart1();            
+            var answer = 0;
+            _dotareas = InitializeDotArea();
+            foreach (var dotArea in _dotareas)
             {
-                var exceptEdge = current.Edges.FirstOrDefault(x => _vertexs[x.To].Distance == current.Distance - 1);
-                current.Flag = true;
-                current = _vertexs[exceptEdge.To];                
-            }
-            //_dotareas = InitializeDotArea();
-            //var answer = 0;
-            //foreach (var area in _dotareas)
-            //{
-            //    if (!area.IsValid() || !area.Enclosed()) continue;
-            //    answer += area.Dots.Count;
-            //}
+                if (!dotArea.IsValid()) continue;
+                if (dotArea.ClosedPipes.All(x => passing.ContainsKey(x.Id)))
+                {
+                    answer += dotArea.Dots.Count;
+                }
+            }            
 
-            return 0;
+            return answer;
         }
 
         private IList<DotArea> InitializeDotArea()
@@ -134,7 +146,6 @@ namespace TDD.Day10
             }
             return result;
         }
-
 
         private IList<Vertex> GetAdjacentDots(IDictionary<string, Vertex> vertexs, Vertex startVertex)
         {
@@ -190,15 +201,32 @@ namespace TDD.Day10
 
         public void Write1()
         {
-            for (var row = 0; row <= _vertexs.Values.Max(x => x.Row); row++)
-            {
-                for (var column = 0; column <= _vertexs.Values.Max(x => x.Column); column++)
-                {
-                    var vertex = _vertexs[Vertex.GenerateId(row, column)];
-                    Console.ForegroundColor = vertex.Flag ? ConsoleColor.Red : ConsoleColor.White;
-                }
-                Console.WriteLine();
-            }
+            //for (var row = 0; row <= _vertexs.Values.Max(x => x.Row); row++)
+            //{
+            //    for (var column = 0; column <= _vertexs.Values.Max(x => x.Column); column++)
+            //    {
+            //        var vertex = _vertexs[Vertex.GenerateId(row, column)];
+            //        Console.ForegroundColor = GetColor(vertex);
+            //        Console.Write(vertex.Symbol.ToString().PadRight(4));
+            //    }
+            //    Console.WriteLine();
+            //}
         }
+
+        //private ConsoleColor GetColor(Vertex vertex)
+        //{
+        //    var colors = new ConsoleColor[] {
+        //        ConsoleColor.Red,
+        //        ConsoleColor.Green
+        //    };
+        //    for (var i = 0; i < paths.Count; i++)
+        //    {
+        //        if (paths[i].Contains(vertex))
+        //        {
+        //            return colors[i % paths.Count];
+        //        }
+        //    }
+        //    return ConsoleColor.White;
+        //}
     }
 }
